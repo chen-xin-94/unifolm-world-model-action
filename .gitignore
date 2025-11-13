@@ -128,3 +128,11 @@ Data/Pretrained
 Data/utils.py
 Experiment/checkpoint
 Experiment/log
+
+# reproduction
+checkpoints
+datasets
+datasets_converted
+.tasks.local
+.tmp.local
+output
