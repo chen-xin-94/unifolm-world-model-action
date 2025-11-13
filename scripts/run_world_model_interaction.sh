@@ -1,8 +1,9 @@
+#!/bin/bash
 model_name=testing
-ckpt=/path/to/model/checkpoint
+ckpt=checkpoints/unifolm_wma_dual.ckpt
 config=configs/inference/world_model_interaction.yaml
 seed=123
-res_dir="/path/to/result/directory"
+res_dir=output
 
 datasets=(
     "unitree_z1_stackbox"
@@ -20,7 +21,7 @@ for i in "${!datasets[@]}"; do
     n_iter=${n_iters[$i]}
     fs=${fses[$i]}
 
-    CUDA_VISIBLE_DEVICES=0 python3 scripts/evaluation/world_model_interaction.py \
+    CUDA_VISIBLE_DEVICES=7 python3 scripts/evaluation/world_model_interaction.py \
     --seed ${seed} \
     --ckpt_path $ckpt \
     --config $config \
@@ -29,7 +30,7 @@ for i in "${!datasets[@]}"; do
     --unconditional_guidance_scale 1.0 \
     --ddim_steps 50 \
     --ddim_eta 1.0 \
-    --prompt_dir "/path/to/unifolm-world-model-action/examples/world_model_interaction_prompts" \
+    --prompt_dir "examples/world_model_interaction_prompts" \
     --dataset ${dataset} \
     --video_length 16 \
     --frame_stride ${fs} \
