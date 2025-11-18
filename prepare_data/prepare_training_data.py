@@ -48,7 +48,7 @@ def is_av1(file_path):
 
 def convert_to_h264(input_path, output_path):
     subprocess.run([
-        "ffmpeg", "-i",
+        "ffmpeg", "-y", "-i",
         str(input_path), "-c:v", "libx264", "-preset", "slow", "-crf", "23",
         "-c:a", "copy",
         str(output_path)
@@ -103,6 +103,15 @@ def main(args):
     if not source_video_views:
         raise ValueError("No video features found in metadata to determine view names.")
 
+    def episode_completed(idx):
+        target_h5_file = target_transitions_dir / f"{idx}.h5"
+        if not target_h5_file.exists():
+            return False
+        for view in source_video_views:
+            if not (target_videos_dir / view / f"{idx}.mp4").exists():
+                return False
+        return True
+
     for v_idx, view_name in enumerate(source_video_views):
 
         target_videos_view_dir = target_videos_dir / view_name
@@ -120,13 +129,18 @@ def main(args):
                     f"with chunk_size {chunk_size}")
             chunk_dir_name = f"chunk-{chunk_id:03d}"
             # Copy source video to target vidoe dir
+            target_video = target_videos_view_dir / f"{idx}.mp4"
+            target_h5_file = target_transitions_dir / f"{idx}.h5"
+            if episode_completed(idx):
+                if v_idx == 0:
+                    print(f"Skipping episode_{idx:06d}: outputs already exist.")
+                continue
             source_video = source_videos_root / chunk_dir_name / view_name / f"episode_{idx:06d}.mp4"
             if not source_video.exists():
                 raise FileNotFoundError(f"Missing source video {source_video}")
             if is_av1(source_video):
-                output_video = str(target_videos_view_dir / f"{idx}.mp4")
                 print(f"Converting episode_{idx:06d}.mp4 to H.264...")
-                convert_to_h264(source_video, output_video)
+                convert_to_h264(source_video, target_video)
             else:
                 print(f"Skipping episode_{idx:06d}.mp4: not AV1 encoded.")
 
@@ -140,7 +154,6 @@ def main(args):
 
             # Save action and state into a h5 file
             if v_idx == 0:
-                target_h5_file = target_transitions_dir / f"{idx}.h5"
                 with h5py.File(str(target_h5_file), 'w') as h5f:
                     h5f.create_dataset('observation.state', data=states)
                     h5f.create_dataset('action', data=actions)
