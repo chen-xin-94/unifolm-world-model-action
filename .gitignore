@@ -132,7 +132,7 @@ Experiment/log
 # reproduction
 checkpoints
 datasets
-datasets_converted
+datasets_converted*
 .tasks.local
 .tmp.local
 output
