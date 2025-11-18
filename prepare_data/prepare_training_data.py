@@ -58,9 +58,9 @@ def convert_to_h264(input_path, output_path):
 
 def main(args):
     source_dir = Path(args.source_dir)
-    source_data_dir = source_dir / args.dataset_name / "data" / "chunk-000"
+    source_data_root = source_dir / args.dataset_name / "data"
     source_meta_dir = source_dir / args.dataset_name / "meta"
-    source_videos_dir = source_dir / args.dataset_name / "videos" / "chunk-000"
+    source_videos_root = source_dir / args.dataset_name / "videos"
 
     target_dir = Path(args.target_dir)
     target_videos_dir = target_dir / "videos" / args.dataset_name
@@ -85,6 +85,10 @@ def main(args):
     with open(str(info_json_path), "r") as f:
         info = json.load(f)
     total_episodes = info['total_episodes']
+    chunk_size = info.get('chunks_size')
+    total_chunks = info.get('total_chunks')
+    if chunk_size is None or total_chunks is None:
+        raise ValueError("chunks_size and total_chunks must be provided in info.json")
 
     # Load task.jsonl to get lanugage ins
     tasks_jsonl_path = source_meta_dir / "tasks.jsonl"
@@ -92,10 +96,15 @@ def main(args):
         tasks = [json.loads(line) for line in f]
     instruction = tasks[0]['task']
 
-    source_video_views = [d for d in source_videos_dir.iterdir()]
-    for v_idx, source_view_dir in enumerate(source_video_views):
+    source_video_views = sorted([
+        key for key, feature in info.get('features', {}).items()
+        if feature.get('dtype') == 'video'
+    ])
+    if not source_video_views:
+        raise ValueError("No video features found in metadata to determine view names.")
 
-        view_name = source_view_dir.name
+    for v_idx, view_name in enumerate(source_video_views):
+
         target_videos_view_dir = target_videos_dir / view_name
         target_videos_view_dir.mkdir(parents=True, exist_ok=True)
 
@@ -104,8 +113,16 @@ def main(args):
             all_states = []
 
         for idx in tqdm(range(total_episodes)):
+            chunk_id = idx // chunk_size
+            if chunk_id >= total_chunks:
+                raise ValueError(
+                    f"Episode index {idx} exceeds declared total_chunks ({total_chunks}) "
+                    f"with chunk_size {chunk_size}")
+            chunk_dir_name = f"chunk-{chunk_id:03d}"
             # Copy source video to target vidoe dir
-            source_video = source_view_dir / f"episode_{idx:06d}.mp4"
+            source_video = source_videos_root / chunk_dir_name / view_name / f"episode_{idx:06d}.mp4"
+            if not source_video.exists():
+                raise FileNotFoundError(f"Missing source video {source_video}")
             if is_av1(source_video):
                 output_video = str(target_videos_view_dir / f"{idx}.mp4")
                 print(f"Converting episode_{idx:06d}.mp4 to H.264...")
@@ -114,7 +131,9 @@ def main(args):
                 print(f"Skipping episode_{idx:06d}.mp4: not AV1 encoded.")
 
             # Load parquet file
-            episode_parquet_file = source_data_dir / f"episode_{idx:06d}.parquet"
+            episode_parquet_file = source_data_root / chunk_dir_name / f"episode_{idx:06d}.parquet"
+            if not episode_parquet_file.exists():
+                raise FileNotFoundError(f"Missing episode parquet {episode_parquet_file}")
             episode_data = pd.read_parquet(episode_parquet_file)
             actions = torch.tensor(episode_data['action'].tolist())
             states = torch.tensor(episode_data['observation.state'].tolist())
