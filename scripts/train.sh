@@ -11,22 +11,27 @@
 
 
 # args
-name="experiment_name"
+name="reproduction"
 config_file=configs/train/config.yaml
 
 # save root dir for logs, checkpoints, tensorboard record, etc.
-save_root="/path/to/savedir"
+save_root="/raid/chen/repo/unifolm-world-model-action/output"
 
 mkdir -p $save_root/$name
 
 ## run
-CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 python3 -m torch.distributed.launch \
---nproc_per_node=8 --nnodes=1 --master_addr=127.0.0.1 --master_port=12366 --node_rank=0 \
+# GPU configuration for one node
+gpus="0,1,2,3,4,5,7"
+num_gpus=$(echo $gpus | awk -F',' '{print NF}')
+echo "Using GPUs: $gpus (count: $num_gpus)"
+
+CUDA_VISIBLE_DEVICES=$gpus python3 -m torch.distributed.launch \
+--nproc_per_node=$num_gpus --nnodes=1 --master_addr=127.0.0.1 --master_port=12366 --node_rank=0 \
 ./scripts/trainer.py \
 --base $config_file \
 --train \
 --name $name \
 --logdir $save_root \
---devices 8 \
---total_gpus=8 \
+--devices $num_gpus \
+--total_gpus=$num_gpus \
 lightning.trainer.num_nodes=1
