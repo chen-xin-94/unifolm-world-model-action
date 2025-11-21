@@ -112,6 +112,13 @@ def main(args):
                 return False
         return True
 
+    # Determine state key based on dataset name
+    state_key = 'observation.state'
+    if "franka" in args.dataset_name and "single" in args.dataset_name:
+        state_key = 'observation.state.franka_robot_ee'
+    elif "thor" in args.dataset_name and "single" in args.dataset_name:
+        state_key = 'observation.state.thor_robot_ee'
+
     for v_idx, view_name in enumerate(source_video_views):
 
         target_videos_view_dir = target_videos_dir / view_name
@@ -150,7 +157,7 @@ def main(args):
                 raise FileNotFoundError(f"Missing episode parquet {episode_parquet_file}")
             episode_data = pd.read_parquet(episode_parquet_file)
             actions = torch.tensor(episode_data['action'].tolist())
-            states = torch.tensor(episode_data['observation.state'].tolist())
+            states = torch.tensor(episode_data[state_key].tolist())
 
             # Save action and state into a h5 file
             if v_idx == 0:
