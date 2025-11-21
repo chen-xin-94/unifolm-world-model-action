@@ -113,11 +113,16 @@ def main(args):
         return True
 
     # Determine state key based on dataset name
-    state_key = 'observation.state'
+    state_keys = ['observation.state']
     if "franka" in args.dataset_name and "single" in args.dataset_name:
-        state_key = 'observation.state.franka_robot_ee'
+        state_keys = ['observation.state.franka_robot_ee']
+    elif "franka" in args.dataset_name and "dual" in args.dataset_name:
+        state_keys = ['observation.state.franka_robot_left_ee', 'observation.state.franka_robot_right_ee']
     elif "thor" in args.dataset_name and "single" in args.dataset_name:
-        state_key = 'observation.state.thor_robot_ee'
+        state_keys = ['observation.state.thor_robot_ee']
+    elif "thor" in args.dataset_name and "dual" in args.dataset_name:
+        state_keys = ['observation.state.thor_robot_left_ee', 'observation.state.thor_robot_right_ee']
+
 
     for v_idx, view_name in enumerate(source_video_views):
 
@@ -157,7 +162,10 @@ def main(args):
                 raise FileNotFoundError(f"Missing episode parquet {episode_parquet_file}")
             episode_data = pd.read_parquet(episode_parquet_file)
             actions = torch.tensor(episode_data['action'].tolist())
-            states = torch.tensor(episode_data[state_key].tolist())
+            
+            state_tensors = [torch.tensor(episode_data[key].tolist()) for key in state_keys]
+            state_tensors = [s.unsqueeze(1) if s.dim() == 1 else s for s in state_tensors]
+            states = torch.cat(state_tensors, dim=1)
 
             # Save action and state into a h5 file
             if v_idx == 0:
