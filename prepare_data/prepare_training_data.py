@@ -90,11 +90,12 @@ def main(args):
     if chunk_size is None or total_chunks is None:
         raise ValueError("chunks_size and total_chunks must be provided in info.json")
 
-    # Load task.jsonl to get lanugage ins
-    tasks_jsonl_path = source_meta_dir / "tasks.jsonl"
-    with open(str(tasks_jsonl_path), "r") as f:
-        tasks = [json.loads(line) for line in f]
-    instruction = tasks[0]['task']
+    # Load episodes.jsonl to get per-episode task instructions
+    episodes_jsonl_path = source_meta_dir / "episodes.jsonl"
+    with open(str(episodes_jsonl_path), "r") as f:
+        episodes_info = [json.loads(line) for line in f]
+    # Create a mapping from episode_index to task instruction
+    episode_to_task = {ep['episode_index']: ep['tasks'][0] for ep in episodes_info}
 
     source_video_views = sorted([
         key for key, feature in info.get('features', {}).items()
@@ -176,6 +177,9 @@ def main(args):
                     h5f.attrs['state_type'] = 'joint position'
                     h5f.attrs['robot_type'] = args.robot_name
 
+            # Get episode-specific instruction
+            instruction = episode_to_task.get(idx, "Unknown task")
+            
             # Updata df
             df = pd.concat([
                 df,
