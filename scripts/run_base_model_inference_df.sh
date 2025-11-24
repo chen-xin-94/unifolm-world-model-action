@@ -1,9 +1,9 @@
 #!/bin/bash
 
-model_name=base_model
+model_name=base_model_df
 ckpt=checkpoints/unifolm_wma_base.ckpt
-config=configs/inference/base_model_inference.yaml
-res_dir="output/base_model"
+config=configs/inference/base_model_inference_df.yaml
+res_dir="output/base_model_df"
 seed=123
 
 CUDA_VISIBLE_DEVICES=0 python3 scripts/evaluation/base_model_inference.py \
@@ -15,7 +15,7 @@ CUDA_VISIBLE_DEVICES=0 python3 scripts/evaluation/base_model_inference.py \
 --unconditional_guidance_scale 1.0 \
 --ddim_steps 16 \
 --ddim_eta 1.0 \
---prompt_dir "examples/base_model_prompts" \
+--prompt_dir "examples/base_model_prompts_df" \
 --text_input \
 --video_length 16 \
 --timestep_spacing 'uniform_trailing' \
