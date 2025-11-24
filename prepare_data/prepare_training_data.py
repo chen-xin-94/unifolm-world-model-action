@@ -108,6 +108,9 @@ def main(args):
         target_h5_file = target_transitions_dir / f"{idx}.h5"
         if not target_h5_file.exists():
             return False
+        # Skip video checking if skip_videos flag is set
+        if args.skip_videos:
+            return True
         for view in source_video_views:
             if not (target_videos_dir / view / f"{idx}.mp4").exists():
                 return False
@@ -118,6 +121,10 @@ def main(args):
     if "franka" in args.dataset_name and "single" in args.dataset_name:
         state_keys = ['observation.state.franka_robot_ee']
     elif "franka" in args.dataset_name and "dual" in args.dataset_name:
+        state_keys = ['observation.state.franka_robot_left_ee', 'observation.state.franka_robot_right_ee']
+    elif "fr3_single_arm_robotiq_2f" in args.dataset_name:
+        state_keys = ['observation.state.franka_robot_ee']
+    elif "fr3_dual_arm_robotiq_2f" in args.dataset_name:
         state_keys = ['observation.state.franka_robot_left_ee', 'observation.state.franka_robot_right_ee']
     elif "thor" in args.dataset_name and "single" in args.dataset_name:
         state_keys = ['observation.state.thor_robot_ee']
@@ -148,14 +155,17 @@ def main(args):
                 if v_idx == 0:
                     print(f"Skipping episode_{idx:06d}: outputs already exist.")
                 continue
-            source_video = source_videos_root / chunk_dir_name / view_name / f"episode_{idx:06d}.mp4"
-            if not source_video.exists():
-                raise FileNotFoundError(f"Missing source video {source_video}")
-            if is_av1(source_video):
-                print(f"Converting episode_{idx:06d}.mp4 to H.264...")
-                convert_to_h264(source_video, target_video)
-            else:
-                print(f"Skipping episode_{idx:06d}.mp4: not AV1 encoded.")
+            
+            # Process videos only if skip_videos is False
+            if not args.skip_videos:
+                source_video = source_videos_root / chunk_dir_name / view_name / f"episode_{idx:06d}.mp4"
+                if not source_video.exists():
+                    raise FileNotFoundError(f"Missing source video {source_video}")
+                if is_av1(source_video):
+                    print(f"Converting episode_{idx:06d}.mp4 to H.264...")
+                    convert_to_h264(source_video, target_video)
+                else:
+                    print(f"Skipping episode_{idx:06d}.mp4: not AV1 encoded.")
 
             # Load parquet file
             episode_parquet_file = source_data_root / chunk_dir_name / f"episode_{idx:06d}.parquet"
@@ -247,4 +257,7 @@ if __name__ == "__main__":
                         type=str,
                         help='robot name',
                         required=True)
+    parser.add_argument('--skip_videos',
+                        action='store_true',
+                        help='Skip video processing and only generate H5 files')
     main(parser.parse_args())
