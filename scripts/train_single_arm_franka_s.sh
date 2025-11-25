@@ -11,17 +11,17 @@
 
 
 # args
-name="reproduction"
-config_file=configs/train/config.yaml
+name="single_arm_franka_simulation"
+config_file=configs/train/config_single_arm_franka_simulation.yaml
 
 # save root dir for logs, checkpoints, tensorboard record, etc.
-save_root="/root/chen/repo/unifolm-world-model-action/output"
+save_root="/mnt/data/output_unifolm-wma"
 
 mkdir -p $save_root/$name
 
 ## run
 # GPU configuration for one node
-gpus="0,1,2,3,4,5,7"
+gpus="0,1,2,3,4,5,6,7"
 num_gpus=$(echo $gpus | awk -F',' '{print NF}')
 echo "Using GPUs: $gpus (count: $num_gpus)"
 
