@@ -225,7 +225,7 @@ model:
 data:
   target: unifolm_wma.utils.data.DataModuleFromConfig
   params:
-    batch_size: 24
+    batch_size: 16
     num_workers: 24
     wrap: False
     train:
