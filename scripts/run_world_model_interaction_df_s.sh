@@ -1,5 +1,5 @@
 #!/bin/bash
-model_name='single_arm_franka_decision_making/epoch=15-step=1000'
+model_name='single_arm_franka_simulation/epoch=30-step=2000'
 ckpt=checkpoints/${model_name}.ckpt
 config=configs/inference/world_model_interaction_df.yaml
 seed=123
@@ -16,7 +16,7 @@ for i in "${!datasets[@]}"; do
     n_iter=${n_iters[$i]}
     fs=${fses[$i]}
 
-    CUDA_VISIBLE_DEVICES=0 python3 scripts/evaluation/world_model_interaction.py \
+    CUDA_VISIBLE_DEVICES=7 python3 scripts/evaluation/world_model_interaction.py \
     --seed ${seed} \
     --ckpt_path $ckpt \
     --config $config \

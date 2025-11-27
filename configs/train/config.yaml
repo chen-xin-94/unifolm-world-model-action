@@ -225,13 +225,13 @@ model:
 data:
   target: unifolm_wma.utils.data.DataModuleFromConfig
   params:
-    batch_size: 7
+    batch_size: 8
     num_workers: 12
     wrap: False
     train:
       target: unifolm_wma.data.wma_data.WMAData
       params:
-        data_dir: '/root/chen/repo/unifolm-world-model-action/datasets_converted'
+        data_dir: '/raid/chen/repo/unifolm-world-model-action/datasets_converted'
         video_length: ${model.params.wma_config.params.temporal_length}
         frame_stride: 2
         load_raw_resolution: True
@@ -246,11 +246,13 @@ data:
         max_action_dim: ${model.params.agent_action_dim}
         max_state_dim: ${model.params.agent_state_dim}
     dataset_and_weights: 
-      unitree_z1_stackbox: 0.2
-      unitree_z1_dual_arm_stackbox: 0.2
-      unitree_z1_dual_arm_stackbox_v2: 0.2
-      unitree_z1_dual_arm_cleanup_pencils: 0.2
-      unitree_g1_pack_camera: 0.2
+      # unitree_z1_stackbox: 0.2
+      # unitree_z1_dual_arm_stackbox: 0.2
+      # unitree_z1_dual_arm_stackbox_v2: 0.2
+      # unitree_z1_dual_arm_cleanup_pencils: 0.2
+      # unitree_g1_pack_camera: 0.2
+      fr3_single_arm_franka_hand: 1.0
+
 
 
 lightning:
@@ -268,7 +270,7 @@ lightning:
     model_checkpoint:
       target: pytorch_lightning.callbacks.ModelCheckpoint
       params:
-        every_n_train_steps: 1000
+        every_n_train_steps: 200
         filename: "{epoch}-{step}"
         save_weights_only: True
     metrics_over_trainsteps_checkpoint:
@@ -276,7 +278,7 @@ lightning:
       params:
         filename: '{epoch}-{step}'
         save_weights_only: True
-        every_n_train_steps: 10000
+        every_n_train_steps: 2000
     batch_logger:
       target: unifolm_wma.utils.callbacks.ImageLogger
       params:

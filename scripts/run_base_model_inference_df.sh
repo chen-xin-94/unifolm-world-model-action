@@ -1,9 +1,13 @@
 #!/bin/bash
 
 model_name=base_model_df
-ckpt=checkpoints/unifolm_wma_base.ckpt
+# ckpt=checkpoints/unifolm_wma_base.ckpt
+# ckpt='/raid/chen/repo/unifolm-world-model-action/checkpoints/single_arm_franka_decision_making/epoch=15-step=1000.ckpt'
+ckpt='/raid/chen/repo/unifolm-world-model-action/checkpoints/single_arm_franka_simulation/epoch=15-step=1000.ckpt'
 config=configs/inference/base_model_inference_df.yaml
-res_dir="output/base_model_df"
+# res_dir="output/base_model_df"
+# res_dir="output/single_arm_franka_decision_making/epoch=15-step=1000"
+res_dir="output/single_arm_franka_simulation/epoch=15-step=1000"
 seed=123
 
 CUDA_VISIBLE_DEVICES=0 python3 scripts/evaluation/base_model_inference.py \
