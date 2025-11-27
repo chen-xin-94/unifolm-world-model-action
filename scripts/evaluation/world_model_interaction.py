@@ -519,6 +519,8 @@ def run_inference(args: argparse.Namespace, gpu_num: int, gpu_no: int) -> None:
             os.makedirs(sample_save_dir, exist_ok=True)
             # For collecting interaction videos
             wm_video = []
+            # For collecting actions to optionally save later
+            actions_log = []
             # Initialize observation queues
             cond_obs_queues = {
                 "observation.images.top":
@@ -588,6 +590,26 @@ def run_inference(args: argparse.Namespace, gpu_num: int, gpu_no: int) -> None:
                     timestep_spacing=args.timestep_spacing,
                     guidance_rescale=args.guidance_rescale,
                     sim_mode=False)
+
+                if args.save_actions:
+                    executed_steps = min(args.exe_steps,
+                                         pred_actions.shape[1])
+                    for step_idx in range(executed_steps):
+                        action_vec = pred_actions[0,
+                                                  step_idx, :ori_action_dim].detach(
+                                                  ).cpu().numpy()
+                        global_step = itr * args.exe_steps + step_idx
+                        timestamp = float(global_step) / float(args.save_fps)
+                        row = {
+                            "video_id": sample['videoid'],
+                            "frame_stride": fs,
+                            "iteration": itr,
+                            "step_in_iteration": step_idx,
+                            "global_step": global_step,
+                            "timestamp_sec": timestamp,
+                            "action": action_vec.tolist(),
+                        }
+                        actions_log.append(row)
 
                 # Update future actions in the observation queues
                 for idx in range(len(pred_actions[0])):
@@ -680,6 +702,13 @@ def run_inference(args: argparse.Namespace, gpu_num: int, gpu_no: int) -> None:
                                fps=args.save_fps)
             sample_full_video_file = f"{video_save_dir}/../{sample['videoid']}_full_fs{fs}.mp4"
             save_results(full_video, sample_full_video_file, fps=args.save_fps)
+
+            if args.save_actions and len(actions_log) > 0:
+                action_csv_file = os.path.join(
+                    video_save_dir, "..",
+                    f"{sample['videoid']}_actions_fs{fs}.csv")
+                action_df = pd.DataFrame(actions_log)
+                action_df.to_csv(action_csv_file, index=False)
 
 
 def get_parser():
@@ -798,6 +827,13 @@ def get_parser():
                         type=int,
                         default=8,
                         help="fps for the saving video")
+    parser.add_argument(
+        "--save_actions",
+        action='store_true',
+        default=False,
+        help=
+        "Save generated actions with timestamps to CSV alongside the full rollout video."
+    )
     return parser
 
 
