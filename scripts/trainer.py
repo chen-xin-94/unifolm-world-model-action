@@ -67,11 +67,18 @@ def get_parser(**parser_kwargs):
 
 
 def get_nondefault_trainer_args(args):
-    parser = argparse.ArgumentParser()
-    parser = Trainer.add_argparse_args(parser)
-    default_trainer_args = parser.parse_args([])
-    return sorted(k for k in vars(default_trainer_args)
-                  if getattr(args, k) != getattr(default_trainer_args, k))
+    # Get default Trainer arguments by inspecting Trainer.__init__ signature
+    import inspect
+    sig = inspect.signature(Trainer.__init__)
+    default_trainer_args = {}
+    for param_name, param in sig.parameters.items():
+        if param_name == 'self':
+            continue
+        default_trainer_args[param_name] = param.default if param.default != inspect.Parameter.empty else None
+    
+    # Return only non-default arguments that were set by the user
+    return sorted(k for k in default_trainer_args.keys()
+                  if hasattr(args, k) and getattr(args, k) != default_trainer_args[k])
 
 
 if __name__ == "__main__":
@@ -81,8 +88,44 @@ if __name__ == "__main__":
     num_rank = int(os.environ.get('WORLD_SIZE'))
 
     parser = get_parser()
-    # Extends existing argparse by default Trainer attributes
-    parser = Trainer.add_argparse_args(parser)
+    # Manually add Trainer arguments (replacement for deprecated add_argparse_args)
+    parser.add_argument('--accelerator', type=str, default='gpu', help='Supports passing different accelerator types')
+    parser.add_argument('--strategy', type=str, default='auto', help='Supports different training strategies')
+    parser.add_argument('--devices', type=str, default='auto', help='Number of devices to train on')
+    parser.add_argument('--num_nodes', type=int, default=1, help='Number of GPU nodes for distributed training')
+    parser.add_argument('--precision', type=str, default=None, help='Double precision (64), full precision (32), half precision (16) or bfloat16 precision (bf16)')
+    parser.add_argument('--fast_dev_run', type=int, default=0, help='Runs n batch(es) of train, val and test to find any bugs')
+    parser.add_argument('--max_epochs', type=int, default=None, help='Stop training once this number of epochs is reached')
+    parser.add_argument('--min_epochs', type=int, default=None, help='Force training for at least these many epochs')
+    parser.add_argument('--max_steps', type=int, default=-1, help='Stop training after this number of steps')
+    parser.add_argument('--min_steps', type=int, default=None, help='Force training for at least these number of steps')
+    parser.add_argument('--max_time', type=str, default=None, help='Stop training after this amount of time has passed')
+    parser.add_argument('--limit_train_batches', type=float, default=None, help='How much of training dataset to check')
+    parser.add_argument('--limit_val_batches', type=float, default=None, help='How much of validation dataset to check')
+    parser.add_argument('--limit_test_batches', type=float, default=None, help='How much of test dataset to check')
+    parser.add_argument('--limit_predict_batches', type=float, default=None, help='How much of prediction dataset to check')
+    parser.add_argument('--overfit_batches', type=float, default=0.0, help='Overfit a fraction of training data')
+    parser.add_argument('--val_check_interval', type=float, default=None, help='How often to check the validation set')
+    parser.add_argument('--check_val_every_n_epoch', type=int, default=1, help='Check val every n train epochs')
+    parser.add_argument('--num_sanity_val_steps', type=int, default=None, help='Sanity check runs n validation batches before starting the training routine')
+    parser.add_argument('--log_every_n_steps', type=int, default=None, help='How often to log within steps')
+    parser.add_argument('--enable_checkpointing', default=None, help='If True, enable checkpointing')
+    parser.add_argument('--enable_progress_bar', default=None, help='Whether to enable to progress bar by default')
+    parser.add_argument('--enable_model_summary', default=None, help='Whether to enable model summarization by default')
+    parser.add_argument('--accumulate_grad_batches', type=int, default=1, help='Accumulates grads every k batches')
+    parser.add_argument('--gradient_clip_val', type=float, default=None, help='Gradient clipping value')
+    parser.add_argument('--gradient_clip_algorithm', type=str, default=None, help='The gradient clipping algorithm to use')
+    parser.add_argument('--deterministic', default=None, help='If True, sets whether PyTorch operations must use deterministic algorithms')
+    parser.add_argument('--benchmark', default=None, help='If True, enables cudnn.benchmark')
+    parser.add_argument('--inference_mode', default=True, help='Whether to use torch.inference_mode() or torch.no_grad() during evaluation')
+    parser.add_argument('--use_distributed_sampler', default=True, help='Whether to wrap the DataLoader sampler with DistributedSampler')
+    parser.add_argument('--profiler', type=str, default=None, help='To profile individual steps during training and assist in identifying bottlenecks')
+    parser.add_argument('--detect_anomaly', default=False, help='Enable anomaly detection for the autograd engine')
+    parser.add_argument('--barebones', default=False, help='Whether to use the Trainer in barebones mode')
+    parser.add_argument('--plugins', type=str, default=None, help='Plugins allow modification of core behavior')
+    parser.add_argument('--sync_batchnorm', default=False, help='Synchronize batch norm layers between process groups/whole world')
+    parser.add_argument('--reload_dataloaders_every_n_epochs', type=int, default=0, help='Set to a non-negative integer to reload dataloaders every n epochs')
+    parser.add_argument('--default_root_dir', type=str, default=None, help='Default path for logs and weights')
     args, unknown = parser.parse_known_args()
     transf_logging.set_verbosity_error()
     seed_everything(args.seed)
@@ -173,9 +216,11 @@ if __name__ == "__main__":
     trainer_kwargs['precision'] = lightning_config.get('precision', 32)
     trainer_kwargs["sync_batchnorm"] = False
 
-    # Trainer config: others
-    trainer_args = argparse.Namespace(**trainer_config)
-    trainer = Trainer.from_argparse_args(trainer_args, **trainer_kwargs)
+    # Trainer config: others (replacement for deprecated from_argparse_args)
+    # Merge trainer_config with trainer_kwargs, with trainer_kwargs taking precedence
+    all_trainer_args = dict(trainer_config)
+    all_trainer_args.update(trainer_kwargs)
+    trainer = Trainer(**all_trainer_args)
 
     # Allow checkpointing via USR1
     def melk(*args, **kwargs):

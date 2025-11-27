@@ -138,7 +138,10 @@ def get_trainer_logger(lightning_config, logdir, on_debug):
 
 def get_trainer_strategy(lightning_config):
     default_strategy_dict = {
-        "target": "pytorch_lightning.strategies.DDPShardedStrategy"
+        "target": "pytorch_lightning.strategies.DDPStrategy",
+        "params": {
+            "find_unused_parameters": True
+        }
     }
     if "strategy" in lightning_config:
         strategy_cfg = lightning_config.strategy

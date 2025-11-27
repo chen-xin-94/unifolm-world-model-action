@@ -199,7 +199,7 @@ class CUDACallback(Callback):
     def on_train_epoch_start(self, trainer, pl_module):
         # Reset the memory use counter
         # Lightning update
-        if int((pl.__version__).split('.')[1]) >= 7:
+        if int((pl.__version__).split('.')[0]) >= 2:
             gpu_index = trainer.strategy.root_device.index
         else:
             gpu_index = trainer.root_gpu
@@ -208,7 +208,7 @@ class CUDACallback(Callback):
         self.start_time = time.time()
 
     def on_train_epoch_end(self, trainer, pl_module):
-        if int((pl.__version__).split('.')[1]) >= 7:
+        if int((pl.__version__).split('.')[0]) >= 2:
             gpu_index = trainer.strategy.root_device.index
         else:
             gpu_index = trainer.root_gpu
