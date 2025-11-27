@@ -1,0 +1,4 @@
+videoid,contentUrl,duration,data_dir,instruction,dynamic_confidence,dynamic_wording,dynamic_source_category,embodiment,fps
+0,x,x,fr3_single_arm_franka_hand,Pick the Apple Juice Bottle of size 500ml and place it in Blue Crate,x,x,x,Franka FR3 Single Arm with Franka Hand,30
+1,x,x,fr3_single_arm_franka_hand,Pick the Apple Juice Bottle of size 500ml and place it in Blue Crate,x,x,x,Franka FR3 Single Arm with Franka Hand,30
+2,x,x,fr3_single_arm_franka_hand,Pick the Apple Juice Bottle of size 500ml and place it in Blue Crate,x,x,x,Franka FR3 Single Arm with Franka Hand,30
