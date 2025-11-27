@@ -20,12 +20,12 @@ for i in "${!datasets[@]}"; do
     --seed ${seed} \
     --ckpt_path $ckpt \
     --config $config \
-    --savedir "${res_dir}/${dataset}" \
+    --savedir "${res_dir}/${dataset}_unseen" \
     --bs 1 --height 320 --width 512 \
     --unconditional_guidance_scale 1.0 \
     --ddim_steps 50 \
     --ddim_eta 1.0 \
-    --prompt_dir "examples/world_model_interaction_prompts_df" \
+    --prompt_dir "examples/world_model_interaction_prompts_df_unseen" \
     --dataset ${dataset} \
     --video_length 16 \
     --frame_stride ${fs} \
