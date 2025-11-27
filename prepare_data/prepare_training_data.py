@@ -161,11 +161,12 @@ def main(args):
                 source_video = source_videos_root / chunk_dir_name / view_name / f"episode_{idx:06d}.mp4"
                 if not source_video.exists():
                     raise FileNotFoundError(f"Missing source video {source_video}")
-                if is_av1(source_video):
-                    print(f"Converting episode_{idx:06d}.mp4 to H.264...")
+                if args.convert_av1 and is_av1(source_video):
+                    print(f"Converting episode_{idx:06d}.mp4 from AV1 to H.264...")
                     convert_to_h264(source_video, target_video)
                 else:
-                    print(f"Skipping episode_{idx:06d}.mp4: not AV1 encoded.")
+                    print(f"Copying episode_{idx:06d}.mp4...")
+                    shutil.copy2(source_video, target_video)
 
             # Load parquet file
             episode_parquet_file = source_data_root / chunk_dir_name / f"episode_{idx:06d}.parquet"
@@ -260,4 +261,7 @@ if __name__ == "__main__":
     parser.add_argument('--skip_videos',
                         action='store_true',
                         help='Skip video processing and only generate H5 files')
+    parser.add_argument('--convert_av1',
+                        action='store_true',
+                        help='Convert AV1 videos to H.264, otherwise copy all videos directly')
     main(parser.parse_args())
