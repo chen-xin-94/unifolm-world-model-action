@@ -285,6 +285,30 @@ class CrossAttention(nn.Module):
 
         b, _, _ = q.shape
         q = q.unsqueeze(3).reshape(b, q.shape[1], self.heads, self.dim_head).permute(0, 2, 1, 3).reshape(b * self.heads, q.shape[1], self.dim_head).contiguous()
+        
+        # Helper function to compute attention with fallback
+        def compute_attention_with_fallback(q_in, k_in, v_in, attn_bias=None):
+            try:
+                # Try xformers first
+                return xformers.ops.memory_efficient_attention(q_in, k_in, v_in, attn_bias=attn_bias, op=None)
+            except NotImplementedError:
+                # Fallback to standard PyTorch attention for unsupported GPU architectures
+                # Reshape to standard attention format: (b*h, n, d)
+                scale = self.scale
+                
+                # Compute attention scores
+                sim = torch.einsum('b i d, b j d -> b i j', q_in, k_in) * scale
+                
+                # Apply attention bias if provided
+                if attn_bias is not None:
+                    sim = sim + attn_bias
+                
+                # Softmax
+                attn = sim.softmax(dim=-1)
+                
+                # Apply attention to values
+                return torch.einsum('b i j, b j d -> b i d', attn, v_in)
+        
         if k is not None:
             k, v = map(
                 lambda t: t.unsqueeze(3).reshape(b, t.shape[
@@ -292,11 +316,7 @@ class CrossAttention(nn.Module):
                         b * self.heads, t.shape[1], self.dim_head).contiguous(),
                 (k, v),
             )
-            out = xformers.ops.memory_efficient_attention(q,
-                                                          k,
-                                                          v,
-                                                          attn_bias=None,
-                                                          op=None)
+            out = compute_attention_with_fallback(q, k, v, attn_bias=None)
             out = (out.unsqueeze(0).reshape(
                 b, self.heads, out.shape[1],
                 self.dim_head).permute(0, 2, 1,
@@ -312,11 +332,7 @@ class CrossAttention(nn.Module):
                         ),
                 (k_ip, v_ip),
             )
-            out_ip = xformers.ops.memory_efficient_attention(q,
-                                                             k_ip,
-                                                             v_ip,
-                                                             attn_bias=None,
-                                                             op=None)
+            out_ip = compute_attention_with_fallback(q, k_ip, v_ip, attn_bias=None)
             out_ip = (out_ip.unsqueeze(0).reshape(
                 b, self.heads, out_ip.shape[1],
                 self.dim_head).permute(0, 2, 1,
@@ -332,11 +348,7 @@ class CrossAttention(nn.Module):
                         ),
                 (k_as, v_as),
             )
-            out_as = xformers.ops.memory_efficient_attention(q,
-                                                             k_as,
-                                                             v_as,
-                                                             attn_bias=None,
-                                                             op=None)
+            out_as = compute_attention_with_fallback(q, k_as, v_as, attn_bias=None)
             out_as = (out_as.unsqueeze(0).reshape(
                 b, self.heads, out_as.shape[1],
                 self.dim_head).permute(0, 2, 1,
@@ -356,8 +368,7 @@ class CrossAttention(nn.Module):
                     b * self.heads, attn_mask_aa.shape[1], attn_mask_aa.shape[2])
             attn_mask_aa = attn_mask_aa.to(q.dtype)
 
-            out_aa = xformers.ops.memory_efficient_attention(
-                q, k_aa, v_aa, attn_bias=attn_mask_aa, op=None)
+            out_aa = compute_attention_with_fallback(q, k_aa, v_aa, attn_bias=attn_mask_aa)
 
             out_aa = (out_aa.unsqueeze(0).reshape(
                 b, self.heads, out_aa.shape[1],
