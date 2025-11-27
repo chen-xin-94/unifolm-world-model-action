@@ -594,6 +594,10 @@ def run_inference(args: argparse.Namespace, gpu_num: int, gpu_no: int) -> None:
                 if args.save_actions:
                     executed_steps = min(args.exe_steps,
                                          pred_actions.shape[1])
+                    state_cond = observation['observation.state'][0,
+                                                                  -1, :
+                                                                  ori_state_dim].detach(
+                                                                  ).cpu().numpy()
                     for step_idx in range(executed_steps):
                         action_vec = pred_actions[0,
                                                   step_idx, :ori_action_dim].detach(
@@ -608,6 +612,7 @@ def run_inference(args: argparse.Namespace, gpu_num: int, gpu_no: int) -> None:
                             "global_step": global_step,
                             "timestamp_sec": timestamp,
                             "action": action_vec.tolist(),
+                            "observation.state": state_cond.tolist(),
                         }
                         actions_log.append(row)
 
@@ -706,7 +711,7 @@ def run_inference(args: argparse.Namespace, gpu_num: int, gpu_no: int) -> None:
             if args.save_actions and len(actions_log) > 0:
                 action_csv_file = os.path.join(
                     video_save_dir, "..",
-                    f"{sample['videoid']}_actions_fs{fs}.csv")
+                    f"{sample['videoid']}_actions_states_fs{fs}.csv")
                 action_df = pd.DataFrame(actions_log)
                 action_df.to_csv(action_csv_file, index=False)
 
