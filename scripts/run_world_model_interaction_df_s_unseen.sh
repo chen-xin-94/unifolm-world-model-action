@@ -1,5 +1,9 @@
 #!/bin/bash
-model_name='single_arm_franka_simulation/epoch=45-step=3000'
+
+# Parse command line arguments
+model_name=${1:-'single_arm_franka_simulation/epoch=45-step=3000'}
+CUDA_DEVICES=${2:-'7'}
+
 ckpt=checkpoints/${model_name}.ckpt
 config=configs/inference/world_model_interaction_df.yaml
 seed=123
@@ -16,7 +20,7 @@ for i in "${!datasets[@]}"; do
     n_iter=${n_iters[$i]}
     fs=${fses[$i]}
 
-    CUDA_VISIBLE_DEVICES=7 python3 scripts/evaluation/world_model_interaction.py \
+    CUDA_VISIBLE_DEVICES=${CUDA_DEVICES} python3 scripts/evaluation/world_model_interaction.py \
     --seed ${seed} \
     --ckpt_path $ckpt \
     --config $config \
