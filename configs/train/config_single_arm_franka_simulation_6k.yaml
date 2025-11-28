@@ -33,7 +33,6 @@ model:
     n_obs_steps_acting: 2
     agent_state_dim: 16
     agent_action_dim: 16
-    # decision_making_only: True
     decision_making_only: False
 
 
@@ -225,8 +224,8 @@ model:
 data:
   target: unifolm_wma.utils.data.DataModuleFromConfig
   params:
-    batch_size: 24
-    num_workers: 24
+    batch_size: 8
+    num_workers: 12
     wrap: False
     train:
       target: unifolm_wma.data.wma_data.WMAData
@@ -246,7 +245,7 @@ data:
         max_action_dim: ${model.params.agent_action_dim}
         max_state_dim: ${model.params.agent_state_dim}
     dataset_and_weights: 
-      fr3_dual_arm_franka_hand: 1.0
+      fr3_single_arm_franka_hand_6k: 1.0
 
 
 lightning:

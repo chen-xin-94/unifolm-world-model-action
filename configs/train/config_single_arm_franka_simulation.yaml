@@ -33,7 +33,6 @@ model:
     n_obs_steps_acting: 2
     agent_state_dim: 16
     agent_action_dim: 16
-    # decision_making_only: True
     decision_making_only: False
 
 
@@ -225,13 +224,13 @@ model:
 data:
   target: unifolm_wma.utils.data.DataModuleFromConfig
   params:
-    batch_size: 24
-    num_workers: 24
+    batch_size: 8
+    num_workers: 12
     wrap: False
     train:
       target: unifolm_wma.data.wma_data.WMAData
       params:
-        data_dir: '/root/chen/repo/unifolm-world-model-action/datasets_converted'
+        data_dir: '/raid/chen/repo/unifolm-world-model-action/datasets_converted'
         video_length: ${model.params.wma_config.params.temporal_length}
         frame_stride: 2
         load_raw_resolution: True
