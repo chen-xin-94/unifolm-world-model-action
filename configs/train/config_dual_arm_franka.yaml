@@ -33,7 +33,6 @@ model:
     n_obs_steps_acting: 2
     agent_state_dim: 16
     agent_action_dim: 16
-    # decision_making_only: True
     decision_making_only: False
 
 
