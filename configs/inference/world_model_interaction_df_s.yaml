@@ -243,5 +243,4 @@ data:
       # unitree_z1_dual_arm_stackbox_v2: 0.2
       # unitree_z1_dual_arm_cleanup_pencils: 0.2
       # unitree_g1_pack_camera: 0.2
-      # fr3_single_arm_franka_hand: 1.0
-      fr3_dual_arm_franka_hand: 1.0
+      fr3_single_arm_franka_hand: 1.0
