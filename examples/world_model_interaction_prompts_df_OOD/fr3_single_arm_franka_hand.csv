@@ -1,2 +1,5 @@
 videoid,contentUrl,duration,data_dir,instruction,dynamic_confidence,dynamic_wording,dynamic_source_category,embodiment,fps
 0,x,x,fr3_single_arm_franka_hand,Pick the Apple Juice Bottle of size 500ml out of the Blue Crate and place it on the table,x,x,x,Franka FR3 Single Arm with Franka Hand,30
+1000,x,x,fr3_single_arm_franka_hand,Pick the Apple Juice Bottle of size 500ml from the table and place it back on the table,x,x,x,Franka FR3 Single Arm with Franka Hand,30
+10000,x,x,fr3_single_arm_franka_hand,Pick the White Power Cable and place it back on the table,x,x,x,Franka FR3 Single Arm with Franka Hand,30
+1000-1,x,x,fr3_single_arm_franka_hand,Pick the Glass Bottle from the table and place it back on the table,x,x,x,Franka FR3 Single Arm with Franka Hand,30

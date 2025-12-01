@@ -35,21 +35,21 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Run the OOD script
-echo ""
-echo "[3/4] Running OOD world model interaction..."
-bash "${SCRIPT_DIR}/run_world_model_interaction_df_s_OOD.sh" "${model_name}" "${CUDA_DEVICES}"
-if [ $? -ne 0 ]; then
-    echo "Error: OOD script failed!"
-    exit 1
-fi
-
 # Run the unseen script
 echo ""
-echo "[4/4] Running unseen world model interaction..."
+echo "[3/4] Running unseen world model interaction..."
 bash "${SCRIPT_DIR}/run_world_model_interaction_df_s_unseen.sh" "${model_name}" "${CUDA_DEVICES}"
 if [ $? -ne 0 ]; then
     echo "Error: Unseen script failed!"
+    exit 1
+fi
+
+# Run the OOD script
+echo ""
+echo "[4/4] Running OOD world model interaction..."
+bash "${SCRIPT_DIR}/run_world_model_interaction_df_s_OOD.sh" "${model_name}" "${CUDA_DEVICES}"
+if [ $? -ne 0 ]; then
+    echo "Error: OOD script failed!"
     exit 1
 fi
 
