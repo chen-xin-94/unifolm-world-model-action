@@ -21,7 +21,7 @@ mkdir -p $save_root/$name
 
 ## run
 # GPU configuration for one node
-gpus="0,1,2,3"
+gpus="1,2,3,7"
 num_gpus=$(echo $gpus | awk -F',' '{print NF}')
 echo "Using GPUs: $gpus (count: $num_gpus)"
 
