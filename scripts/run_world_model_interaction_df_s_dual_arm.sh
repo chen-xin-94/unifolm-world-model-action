@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# Parse command line arguments
+model_name=${1:-'dual_arm_franka/epoch=124-step=4000'}
+CUDA_DEVICES=${2:-'0'}
+
+ckpt=checkpoints/${model_name}.ckpt
+config=configs/inference/world_model_interaction_df_s_dual_arm.yaml
+seed=123
+res_dir="output/${model_name}"
+
+datasets=(
+    "fr3_dual_arm_franka_hand"
+)
+n_iters=(12)
+fses=(4)
+
+for i in "${!datasets[@]}"; do
+    dataset=${datasets[$i]}
+    n_iter=${n_iters[$i]}
+    fs=${fses[$i]}
+
+    CUDA_VISIBLE_DEVICES=${CUDA_DEVICES} python3 scripts/evaluation/world_model_interaction.py \
+    --seed ${seed} \
+    --ckpt_path $ckpt \
+    --config $config \
+    --savedir "${res_dir}/${dataset}" \
+    --bs 1 --height 320 --width 512 \
+    --unconditional_guidance_scale 1.0 \
+    --ddim_steps 50 \
+    --ddim_eta 1.0 \
+    --prompt_dir "examples/world_model_interaction_prompts_df" \
+    --dataset ${dataset} \
+    --video_length 16 \
+    --frame_stride ${fs} \
+    --n_action_steps 16 \
+    --exe_steps 16 \
+    --n_iter ${n_iter} \
+    --timestep_spacing 'uniform_trailing' \
+    --guidance_rescale 0.7 \
+    --perframe_ae \
+    --save_actions
+done

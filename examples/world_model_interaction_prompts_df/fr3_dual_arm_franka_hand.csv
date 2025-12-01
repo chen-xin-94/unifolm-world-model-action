@@ -1,0 +1,5 @@
+videoid,contentUrl,duration,data_dir,instruction,dynamic_confidence,dynamic_wording,dynamic_source_category,embodiment,fps
+0,x,x,fr3_dual_arm_franka_hand,Pick the Single Core Electric Wire from the ends and route it to Black Cable Holder,x,x,x,Franka FR3 Dual Arm with Franka Hand,30
+1000,x,x,fr3_dual_arm_franka_hand,"Grab the lid of the White Cardboard Box and move to open it. Once open, move the lid in opposite direction to close it",x,x,x,Franka FR3 Dual Arm with Franka Hand,30
+2000,x,x,fr3_dual_arm_franka_hand,Assemble the Big Joint by picking up Big Joint (Part 3) and stacking it on top of Partially Assembled Big Joint (Part 1 + Part2 Stacked),x,x,x,Franka FR3 Dual Arm with Franka Hand,30
+
