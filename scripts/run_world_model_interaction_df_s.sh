@@ -5,7 +5,7 @@ model_name=${1:-'single_arm_franka_simulation/epoch=75-step=5000'}
 CUDA_DEVICES=${2:-'5'}
 
 ckpt=checkpoints/${model_name}.ckpt
-config=configs/inference/world_model_interaction_df.yaml
+config=configs/inference/world_model_interaction_df_s.yaml
 seed=123
 res_dir="output/${model_name}"
 
