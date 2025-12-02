@@ -2,7 +2,7 @@
 #SBATCH --job-name=unifolm-wma_simulation_single_arm_franka_all        # Job name
 #SBATCH --nodes=2                          # Number of nodes
 #SBATCH --ntasks-per-node=1                # One task per node (torchrun handles multi-GPU)
-#SBATCH --gres=gpu:8                       # 8 GPUs per node (B200)
+#SBATCH --gpus-per-node=8                  # 8 GPUs per node (B200), #SBATCH --gres=gpu:8  for older clusters
 #SBATCH --cpus-per-task=160                # CPUs per task (adjusted for worker-0)
 #SBATCH --mem=0                            # Request all memory on node (or specify like 500G)
 #SBATCH --time=168:00:00                    # Time limit (168 hours, 7 days)

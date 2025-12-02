@@ -28,7 +28,15 @@ if [ -n "$SLURM_JOB_ID" ]; then
     export MASTER_PORT=${MASTER_PORT:-12366}
     NODE_RANK=$SLURM_NODEID
     NNODES=$SLURM_NNODES
-    num_gpus=$SLURM_GPUS_PER_NODE
+    
+    # Robust GPU detection: SLURM_GPUS_PER_NODE is not always set by Slurm
+    if [ -z "$SLURM_GPUS_PER_NODE" ]; then
+        echo "SLURM_GPUS_PER_NODE is not set. Attempting to detect via nvidia-smi..."
+        num_gpus=$(nvidia-smi --query-gpu=name --format=csv,noheader | wc -l)
+        export SLURM_GPUS_PER_NODE=$num_gpus
+    else
+        num_gpus=$SLURM_GPUS_PER_NODE
+    fi
     
     echo "Node: $SLURM_NODEID/$SLURM_NNODES"
     echo "Node name: $(hostname)"
