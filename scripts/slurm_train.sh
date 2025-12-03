@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=unifolm-wma_simulation_single_arm_franka_all        # Job name
+#SBATCH --job-name=unifolm-wma_simulation        # Job name
 #SBATCH --nodes=2                          # Number of nodes
 #SBATCH --ntasks-per-node=1                # One task per node (torchrun handles multi-GPU)
 #SBATCH --gpus-per-node=8                  # 8 GPUs per node (B200), #SBATCH --gres=gpu:8  for older clusters
