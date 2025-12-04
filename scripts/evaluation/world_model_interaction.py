@@ -598,10 +598,25 @@ def run_inference(args: argparse.Namespace, gpu_num: int, gpu_no: int) -> None:
                                                                   -1, :
                                                                   ori_state_dim].detach(
                                                                   ).cpu().numpy()
+                    
+                    # Prepare unnormalizer
+                    wma_dataset = data.test_datasets[args.dataset]
+                    
                     for step_idx in range(executed_steps):
                         action_vec = pred_actions[0,
                                                   step_idx, :ori_action_dim].detach(
                                                   ).cpu().numpy()
+                        
+                        # Unnormalize
+                        unnorm_dict = {
+                            'action': torch.tensor(action_vec).unsqueeze(0),
+                            'observation.state': torch.tensor(state_cond).unsqueeze(0)
+                        }
+                        # Ensure unnormalizer is on CPU (it should be by default)
+                        unnorm_dict = wma_dataset.unnormalizer(unnorm_dict)
+                        action_unnorm = unnorm_dict['action'].squeeze(0).numpy().tolist()
+                        state_unnorm = unnorm_dict['observation.state'].squeeze(0).numpy().tolist()
+
                         global_step = itr * args.exe_steps + step_idx
                         timestamp = float(global_step) / float(args.save_fps)
                         row = {
@@ -611,8 +626,10 @@ def run_inference(args: argparse.Namespace, gpu_num: int, gpu_no: int) -> None:
                             "step_in_iteration": step_idx,
                             "global_step": global_step,
                             "timestamp_sec": timestamp,
-                            "action": action_vec.tolist(),
-                            "observation.state": state_cond.tolist(),
+                            "action.model": action_vec.tolist(),
+                            "observation.state.model": state_cond.tolist(),
+                            "action": action_unnorm,
+                            "observation.state": state_unnorm,
                         }
                         actions_log.append(row)
 
