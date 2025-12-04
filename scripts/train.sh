@@ -15,7 +15,7 @@ name="simulation"
 config_file=configs/train/config.yaml
 
 # save root dir for logs, checkpoints, tensorboard record, etc.
-save_root="/raid/chen/repo/unifolm-world-model-action/output/train"
+save_root="/raid/chen.xin/repo/unifolm-world-model-action/output/train"
 
 mkdir -p $save_root/$name
 

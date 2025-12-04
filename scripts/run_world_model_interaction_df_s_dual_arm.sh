@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Parse command line arguments
-model_name=${1:-'dual_arm_franka/epoch=124-step=4000'}
-CUDA_DEVICES=${2:-'0'}
+model_name=${1:-'dual_arm_franka/epoch=124-step=6000'}
+CUDA_DEVICES=${2:-'7'}
 
 ckpt=checkpoints/${model_name}.ckpt
 config=configs/inference/world_model_interaction_df_s_dual_arm.yaml

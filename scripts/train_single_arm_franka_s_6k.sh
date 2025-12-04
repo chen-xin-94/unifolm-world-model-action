@@ -15,7 +15,7 @@ name="single_arm_franka_simulation_6k"
 config_file=configs/train/config_single_arm_franka_simulation_6k.yaml
 
 # save root dir for logs, checkpoints, tensorboard record, etc.
-save_root="/raid/chen/repo/unifolm-world-model-action/output/train"
+save_root="/raid/chen.xin/repo/unifolm-world-model-action/output/train"
 
 mkdir -p $save_root/$name
 
