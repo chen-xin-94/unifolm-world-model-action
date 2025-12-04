@@ -36,7 +36,7 @@ for i in "${!datasets[@]}"; do
     --n_action_steps 16 \
     --exe_steps 16 \
     --n_iter ${n_iter} \
-    --timestep_spacing 'uniform_trailing' \
+    --timestep_spacing "uniform_trailing" \
     --guidance_rescale 0.7 \
     --perframe_ae \
     --save_actions
